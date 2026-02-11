@@ -1,0 +1,60 @@
+# 第12章：Julia ―― 科学計算の未来を担う新星
+
+## 12-1. 「2つの言語問題」への終止符
+これまで、研究や試作はPythonで行い、本番の高速化にはC++で書き直すという「2つの言語問題（Two-Language Problem）」が開発者を悩ませてきました。Juliaはこの壁を打ち破るために誕生しました。
+
+'''JIT（Just-In-Time）コンパイル'''により、スクリプト言語の手軽さでありながら、コンパイル言語に匹敵するパフォーマンスを叩き出します。
+
+### 実装のポイント
+* '''型推論と型注釈''': 基本は動的ですが、型を意識した設計により、コンパイラが極限まで最適化を行います。
+* '''数学的な親和性''': 多重ディスパッチなど高度な機能を持ちつつ、数式をそのまま書くような直感的な記述が可能です。
+* '''1オリジンと0オリジン''': JuliaはFortranの流れを汲み配列は1から始まりますが、ビット演算ではCと同様の感覚で扱えます。
+
+### Juliaによる「高効率」な実装コード
+'''julia
+using Printf
+
+const N = 13
+
+function solve(col_mask, left_mask, right_mask, all_mask)
+    if col_mask == all_mask
+        return 1
+    end
+
+    total = 0
+    pos = all_mask & ~(col_mask | left_mask | right_mask)
+
+    while pos != 0
+        bit = pos & -pos
+        # xor関数を使用することで、記号の解釈エラーを確実に防ぎます
+        pos = xor(pos, bit)
+        total += solve(col_mask | bit, (left_mask | bit) << 1, (right_mask | bit) >> 1, all_mask)
+    end
+    return total
+end
+
+function run_nqueen()
+    all_mask = (1 << N) - 1
+    println("N=$N で計算開始...")
+    
+    start_time = time()
+    solutions = solve(0, 0, 0, all_mask)
+    end_time = time()
+    
+    elapsed = end_time - start_time
+    
+    @printf("解の総数: %d\n", solutions)
+    @printf("実行時間: %.3f 秒\n", elapsed)
+end
+
+run_nqueen()
+
+'''
+
+## 12-2. 著者による考察
+Juliaでn-Queenを書くと、そのコードの短さはPython（第3章）に近く、実行速度はC++（第4章）に近いという、魔法のような感覚を味わえます。
+
+
+
+受託開発の現場でも、特にデータ分析や高度なアルゴリズムの実装が求められる案件では、Juliaという選択肢を知っているだけで、提案の幅が大きく広がります。
+「新しい言語を学ぶことは、新しい思考を手に入れることである」という格言がありますが、Juliaはまさに'''「効率」と「表現力」の新しい均衡点'''を教えてくれる言語です。

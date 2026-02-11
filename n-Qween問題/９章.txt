@@ -1,0 +1,127 @@
+# 第9章：Pascal ―― 教育的構造の美学
+
+## 9-1. アルゴリズムを「記述」するための言語
+Pascalは、計算機科学の巨星ニクラウス・ヴィルトによって「教育用」として設計されました。しかし、その厳格な型チェックと美しいブロック構造は、実用言語としても極めて優秀でした。
+
+n-Queen問題をPascalで書くと、コードがまるで'''アルゴリズムの教科書'''そのものであるかのように整然と並びます。
+
+### 実装のポイント
+* '''BEGIN-ENDブロック''': 処理の境界を明示し、入れ子構造を視覚的に理解しやすくします。
+* '''厳格な宣言部''': 変数宣言をコードの冒頭に強制することで、プログラマの思考を整理させます。
+* '''集合（Set）の概念''': Pascal特有の強力な集合型がありますが、今回は他言語との比較のため、ビット演算による実装を行います。
+
+### Pascal (Free Pascal) による実装コード
+'''pascal
+program NQueenPascal;
+
+uses
+  sysutils, dateutils;
+
+const
+  N = 13;
+
+var
+  all_mask: Integer;
+  total_solutions: Int64;
+  StartTime, EndTime: TDateTime;
+  ElapsedSeconds: Double; // 小数点以下を扱うための実数型
+
+procedure solve(col_mask, left_mask, right_mask: Integer);
+var
+  pos, bit: Integer;
+begin
+  if col_mask = all_mask then
+  begin
+    total_solutions := total_solutions + 1;
+    exit;
+  end;
+
+  pos := all_mask and not (col_mask or left_mask or right_mask);
+
+  while pos <> 0 do
+  begin
+    bit := pos and -pos;
+    pos := pos xor bit;
+    solve(col_mask or bit, (left_mask or bit) shl 1, (right_mask or bit) shr 1);
+  end;
+end;
+
+begin
+  total_solutions := 0;
+  all_mask := (1 shl N) - 1;
+
+  writeln('N=', N, ' で計算開始...');
+  StartTime := Now;
+
+  solve(0, 0, 0);
+
+  EndTime := Now;
+  // ミリ秒を1000で割って秒に変換
+  ElapsedSeconds := MilliSecondsBetween(StartTime, EndTime) / 1000.0;
+
+  writeln('解の総数: ', total_solutions);
+  // 小数点第3位まで表示（例: 1.234 秒）
+  writeln('実行時間: ', ElapsedSeconds:0:3, ' 秒');
+end.
+program NQueenPascal;
+
+uses
+  sysutils, dateutils;
+
+const
+  N = 13;
+
+var
+  all_mask: Integer;
+  total_solutions: Int64;
+  StartTime, EndTime: TDateTime;
+  ElapsedSeconds: Double; // 小数点以下を扱うための実数型
+
+procedure solve(col_mask, left_mask, right_mask: Integer);
+var
+  pos, bit: Integer;
+begin
+  if col_mask = all_mask then
+  begin
+    total_solutions := total_solutions + 1;
+    exit;
+  end;
+
+  pos := all_mask and not (col_mask or left_mask or right_mask);
+
+  while pos <> 0 do
+  begin
+    bit := pos and -pos;
+    pos := pos xor bit;
+    solve(col_mask or bit, (left_mask or bit) shl 1, (right_mask or bit) shr 1);
+  end;
+end;
+
+begin
+  total_solutions := 0;
+  all_mask := (1 shl N) - 1;
+
+  writeln('N=', N, ' で計算開始...');
+  StartTime := Now;
+
+  solve(0, 0, 0);
+
+  EndTime := Now;
+  // ミリ秒を1000で割って秒に変換
+  ElapsedSeconds := MilliSecondsBetween(StartTime, EndTime) / 1000.0;
+
+  writeln('解の総数: ', total_solutions);
+  // 小数点第3位まで表示（例: 1.234 秒）
+  writeln('実行時間: ', ElapsedSeconds:0:3, ' 秒');
+end.
+
+'''
+
+## 9-2. 著者による考察
+Pascalのコードには、独特の'''「気品」'''があります。`=` ではなく `:=` を代入に使うといった細かな約束事の一つ一つが、「今、自分はコンピュータに厳密な命令を与えているのだ」という自覚を促してくれます。
+
+
+
+大学時代にこの言語で基礎を学んだ経験は、その後のCやJava、Pythonといった多種多様な言語を習得する際の'''「揺るぎない背骨」'''となったはずです。
+
+効率だけを追い求める現代において、Pascalの持つ「正しく書かせる」という哲学を再考することは、プロフェッショナルな開発者にとって非常に意義深い体験と言えるでしょう。

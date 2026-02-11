@@ -1,0 +1,116 @@
+# 第4章：C++ ―― ビット演算によるCPUへの挑戦
+
+## 4-1. マシンの鼓動を感じる「厳密さ」
+C++は、Pythonとは対照的に'''ハードウェアに近い場所'''で動作する言語です。メモリ管理や型定義に厳格である分、開発者が意図した通りの最適化をCPUに命令することができます。
+
+n-Queen問題において、C++がその真価を発揮するのが'''ビット演算'''を用いた高速化です。
+
+### 実装のポイント
+* '''ビットフラグ''': 縦・斜めの衝突判定を、配列のループではなく「1ビットの論理演算」で瞬時に行います。
+* '''インライン展開''': 関数呼び出しのオーバーヘッドを削り、実行効率を極限まで高めます。
+* '''静的型付け''': コンパイル時に最適化をかけ、実行時の無駄を一切排除します。
+
+### C++による高速実装コード
+'''cpp
+#include <ctime>
+#include <iostream>
+
+class NQueen {
+    int all_mask;
+    long count;
+
+public:
+    NQueen(int n) : all_mask((1 << n) - 1), count(0) {}
+
+    // 本体のロジック（再帰）
+    void solve(int col, int left, int right) {
+        if (col == all_mask) {
+            count++;
+            return;
+        }
+        int pos = all_mask & ~(col | left | right);
+        while (pos) {
+            int bit = -pos & pos;
+            pos -= bit;
+            solve(col | bit, (left | bit) << 1, (right | bit) >> 1);
+        }
+    }
+
+    void run_with_timer() {
+        // --- ここで計測開始 ---
+        // この直後から、純粋なアルゴリズムの実行だけが始まります
+        clock_t start = clock();
+
+        solve(0, 0, 0); 
+
+        clock_t end = clock();
+        // --- ここで計測終了 ---
+
+        double duration = (double)(end - start) / CLOCKS_PER_SEC;
+        std::cout << "実行時間: " << duration << " 秒" << std::endl;
+    }
+
+    long getCount() { return count; }
+};
+
+int main() {
+    NQueen engine(13);
+    engine.run_with_timer(); // 計測機能を持った関数を呼ぶ
+    std::cout << "解の総数: " << engine.getCount() << std::endl;
+    return 0;
+}
+#include <ctime>
+#include <iostream>
+
+class NQueen {
+    int all_mask;
+    long count;
+
+public:
+    NQueen(int n) : all_mask((1 << n) - 1), count(0) {}
+
+    // 本体のロジック（再帰）
+    void solve(int col, int left, int right) {
+        if (col == all_mask) {
+            count++;
+            return;
+        }
+        int pos = all_mask & ~(col | left | right);
+        while (pos) {
+            int bit = -pos & pos;
+            pos -= bit;
+            solve(col | bit, (left | bit) << 1, (right | bit) >> 1);
+        }
+    }
+
+    void run_with_timer() {
+        // --- ここで計測開始 ---
+        // この直後から、純粋なアルゴリズムの実行だけが始まります
+        clock_t start = clock();
+
+        solve(0, 0, 0); 
+
+        clock_t end = clock();
+        // --- ここで計測終了 ---
+
+        double duration = (double)(end - start) / CLOCKS_PER_SEC;
+        std::cout << "実行時間: " << duration << " 秒" << std::endl;
+    }
+
+    long getCount() { return count; }
+};
+
+int main() {
+    NQueen engine(13);
+    engine.run_with_timer(); // 計測機能を持った関数を呼ぶ
+    std::cout << "解の総数: " << engine.getCount() << std::endl;
+    return 0;
+}
+
+'''
+
+## 4-2. 著者による考察
+Pythonでは「盤面の配列」を操作していましたが、このC++コードでは盤面を'''ビットの連なり'''として扱っています。
+`(left_mask | bit) << 1` という記述一つで、「一行進むと、左斜めの利き筋が一つ隣へずれる」というチェスの物理法則を表現しています。
+
+この「ビットで世界を記述する」感覚こそが、CやC++を扱うエンジニアが持つ特有の快感であり、受託開発においても'''計算資源を最小限に抑える'''ための必須技能です。

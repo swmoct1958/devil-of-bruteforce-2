@@ -1,0 +1,72 @@
+### 第11章 Kotlin ―― 簡潔さと安全性がもたらす現代的記述
+
+#### 11-1. モダンなパラダイムの統合
+KotlinはJavaとの互換性を保ちつつ、Null安全や簡潔なプロパティ記述など、現代的な機能を備えた言語です。受託開発の現場でもJavaからの移行が進むこの言語は、魔方陣のような再帰アルゴリズムを記述する際にも、ボイラープレートを排した非常に見通しの良い実装を提供してくれます。
+
+##### 実装のポイント
+* 11-1. 関数型プログラミングの導入：sumOf や filter などの標準ライブラリを活用し、行や列の合計判定を宣言的かつ簡潔に記述します。
+* 11-2. 厳格な型推論と安全性：再帰呼び出しにおける引数管理を、Kotlinの強力な型システムによって安全に行い、実行時の予期せぬエラーを防ぎます。
+* 11-3. 早期リターンによる枝切り：条件に合致しない分岐を即座に return するイディオムを用い、探索の効率を最大限に引き出します。
+
+##### Kotlinによる魔方陣探索の実装コード
+｀｀｀kotlin
+class MagicSquareSolver(val n: Int) {
+    private val s = n * (n * n + 1) / 2
+    private val board = IntArray(n * n)
+    private val used = BooleanArray(n * n + 1)
+    var count = 0
+
+    fun solve() {
+        backtrack(0)
+        println("${n}次の魔方陣の解の総数: $count")
+    }
+
+    private fun backtrack(pos: Int) {
+        if (pos == n * n) {
+            if (checkFinal()) count++
+            return
+        }
+
+        if (pos > 0 && pos % n == 0) {
+            var rowSum = 0
+            for (i in (pos - n) until pos) {
+                rowSum += board[i]
+            }
+            if (rowSum != s) return
+        }
+
+        for (valNum in 1..(n * n)) {
+            if (!used[valNum]) {
+                used[valNum] = true
+                board[pos] = valNum
+                backtrack(pos + 1)
+                used[valNum] = false
+            }
+        }
+    }
+
+    private fun checkFinal(): Boolean {
+        for (c in 0 until n) {
+            var colSum = 0
+            for (r in 0 until n) {
+                colSum += board[r * n + c]
+            }
+            if (colSum != s) return false
+        }
+        var d1 = 0
+        var d2 = 0
+        for (i in 0 until n) {
+            d1 += board[i * n + i]
+            d2 += board[i * n + (n - 1 - i)]
+        }
+        return d1 == s && d2 == s
+    }
+}
+
+fun main() {
+    MagicSquareSolver(3).solve()
+}
+｀｀｀
+
+#### 11-2. 著者による考察
+Javaに慣れ親しんだエンジニアにとって、Kotlinでの実装は「記述の贅肉」を削ぎ落とす爽快な体験です。AIが過去のデータから提示しがちなn-Queenのロジックに流されることなく、魔方陣の定義という数学的本質を、最新言語の文法で再定義する。この工程こそが、新しい言語を学び続ける最大の醍醐味です。

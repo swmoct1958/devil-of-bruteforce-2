@@ -1,0 +1,24 @@
+# 付録 A-2. 10言語・入門ガイド ―― 習得と共存のために
+
+## 1. 言語間の親和性と相互運用（Interoperability）
+現代のシステム開発では、異なる言語を組み合わせて使う「適材適所」が重要です。
+
+* **C ↔ C++**: `extern "C"` を使用し、C++からCの関数を直接呼び出すことが可能。
+* **Java ↔ Kotlin**: 同じJVM上で動作し、100%の相互運用性を持つ。既存のJava資産をそのままKotlinから利用できる。
+* **Python ↔ C/C++/Rust**: Pythonの「C拡張」として、重い処理のみを低レイヤー言語に任せる手法が一般的。
+* **Julia ↔ C/Fortran**: `ccall` 機能により、既存の膨大な数値計算ライブラリをオーバーヘッドなしで直接呼び出せる。
+
+## 2. 各言語のリソースと入門の入り口
+
+| 言語 | 公式サイト / 学習リソース | オンライン実行環境 (Playground) |
+| :--- | :--- | :--- |
+| **Python** | [https://www.python.org/](https://www.python.org/) | [https://colab.research.google.com/](https://colab.research.google.com/) |
+| **C++** | [https://isocpp.org/](https://isocpp.org/) | [https://godbolt.org/](https://godbolt.org/) |
+| **C** | [K&R名著等] | [https://www.onlinegdb.com/online_c_compiler](https://www.onlinegdb.com/online_c_compiler) |
+| **Java** | [https://dev.java/](https://dev.java/) | [https://dev.java/playground/](https://dev.java/playground/) |
+| **Rust** | [https://www.rust-lang.org/](https://www.rust-lang.org/) | [https://play.rust-lang.org/](https://play.rust-lang.org/) |
+| **Fortran** | [https://fortran-lang.org/](https://fortran-lang.org/) | [https://fortran-lang.org/en/play/](https://fortran-lang.org/en/play/) |
+| **Pascal** | [https://www.freepascal.org/](https://www.freepascal.org/) | [https://www.tutorialspoint.com/compile_pascal_online.php](https://www.tutorialspoint.com/compile_pascal_online.php) |
+| **Go** | [https://go.dev/](https://go.dev/) | [https://go.dev/play/](https://go.dev/play/) |
+| **Kotlin** | [https://kotlinlang.org/](https://kotlinlang.org/) | [https://play.kotl.in/](https://play.kotl.in/) |
+| **Julia** | [https://julialang.org/](https://julialang.org/) | [https://nextjournal.com/](https://nextjournal.com/) |

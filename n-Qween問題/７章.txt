@@ -1,0 +1,65 @@
+# 第7章：Rust ―― 所有権がもたらす安全と速度の融合
+
+## 7-1. 「コンパイラとの対話」が生む絶対的な安心
+Rustは、現代のプログラミング言語の中で最も勢いのある言語の一つです。その最大の特徴は、'''所有権（Ownership）'''という独自の概念によって、実行速度を一切犠牲にすることなく「メモリ安全」を実現している点にあります。
+
+受託開発において、最もコストがかかるのは「本番環境でのみ発生するメモリバグ」の修正です。Rustは、そのようなバグをコンパイル時に徹底的に排除します。
+
+### 実装のポイント
+* '''ゼロコスト抽象化''': 高級な記述をしても、コンパイル後の機械語はC/C++と同等にまで最適化されます。
+* '''安全な並列化への布石''': 今回はシングルスレッドですが、Rustの構造は将来的なマルチスレッド化（並列探索）への移行を極めて容易にします。
+
+### Rustによる安全・高速実装コード
+'''rust
+use std::time::Instant;
+
+// 外部変数（スタック）の代わりにミュータブルな参照でカウントを渡す
+fn solve(all_mask: u32, col_mask: u32, left_mask: u32, right_mask: u32, total_solutions: &mut i64) {
+    if col_mask == all_mask {
+        *total_solutions += 1;
+        return;
+    }
+
+    let mut pos = all_mask & !(col_mask | left_mask | right_mask);
+
+    while pos != 0 {
+        let bit = pos & (!pos + 1); // 最下位ビットの抽出
+        pos ^= bit;
+        solve(
+            all_mask,
+            col_mask | bit,
+            (left_mask | bit) << 1,
+            (right_mask | bit) >> 1,
+            total_solutions,
+        );
+    }
+}
+
+fn main() {
+    let n = 13;
+    let all_mask = (1u32 << n) - 1;
+    let mut total_solutions = 0i64;
+
+    // --- ここから計測開始 ---
+    let start = Instant::now();
+
+    solve(all_mask, 0, 0, 0, &mut total_solutions);
+
+    let end = Instant::now();
+    // --- ここで計測終了 ---
+
+    let duration = end.duration_since(start);
+
+    println!("N={} の解の総数: {}", n, total_solutions);
+    println!("実行時間: {:.6} 秒", duration.as_secs_f64());
+}
+'''
+
+## 7-2. 著者による考察
+Rustのコードを書いていて感じるのは、'''「コンパイラが最も頼もしい相棒になる」'''という感覚です。
+
+
+
+CやC++では、プログラマが細心の注意を払ってメモリを管理していましたが、Rustではコンパイラがその責任を引き受けてくれます。この「厳格さ」は、一見すると不自由に見えるかもしれませんが、大規模・高難度の受託案件においては、これほど心強いものはありません。
+
+「if-then/goto」の制御構造を保ちつつ、現代的な「安全性」という鎧を纏ったRustは、まさに'''古典と現代の最高の融合'''と言えるでしょう。

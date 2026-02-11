@@ -1,0 +1,41 @@
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>4
+C++ n=4 最速探索開始...
+解の総数: 7040 (理論値: 7040)
+実行時間: 4196 ms
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>5_fixed.exe
+C Language n=4 Independent Fast Search...
+Count: 7040 (7040)
+Time: 4138.00 ms
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>java Magic6
+Java n=4 Search Start...
+Count: 7040 (7040)
+Time: 6111 ms
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>7
+Rust n=4 Search Start...
+Count: 7040 (7040)
+Time: 6425 ms
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>8
+ Fortran n=4 Search Start...
+Count: 7040 (7040)
+Time:    4187.50 ms
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>9
+\Count: 7040 (7040)
+Time: 6309 ms
+Push Enter key to exit...
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>10
+Go n=4 Search Start...
+Count: 7040 (7040)
+Time: 5.5993951s
+
+E:\Kindle本\コンピュータ\全探索の悪魔\魔法陣問題\コードN=4>java -jar 11.jar
+Kotlin n=4 Search Start...
+Count: 7040 (7040)
+Time: 5812 ms
+
+

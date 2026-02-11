@@ -1,0 +1,77 @@
+### 第6章 Java ―― LTS(17/21)で書く堅牢な構造
+
+#### 6-1. 言語の壁を超えた「堅牢さ」
+Javaの最大の価値は、一人法人での開発においても「数ヶ月後の自分」が迷わないための型安全性と構造化の強制にあります。特に近年のLTS（17および21）では、モダンな構文を取り入れ、冗長さを抑えつつもJavaらしい堅牢な実装が可能になっています。
+
+##### 実装のポイント
+* 6-1. 1次元配列による方陣管理：n×nの2次元盤面を1次元配列で扱い、計算効率とメモリ効率を最大化します。
+* 6-2. 定数和Sによる早期枝切り：各行が埋まった瞬間に合計値を判定し、不一致なら即座にバックトラックすることで探索を高速化します。
+
+##### Javaによる魔法陣探索の実装コード
+‘‘‘Java
+public class MagicSquareSolver {
+    private final int n;
+    private final int s;           // 魔方陣定数
+    private final int[] board;
+    private final boolean[] used;
+    private int count = 0;
+
+    public MagicSquareSolver(int n) {
+        this.n = n;
+        this.s = n * (n * n + 1) / 2;
+        this.board = new int[n * n];
+        this.used = new boolean[n * n + 1];
+    }
+
+    public void solve() {
+        backtrack(0);
+        System.out.println(n + "次の魔法陣の解の総数: " + count);
+    }
+
+    private void backtrack(int pos) {
+        if (pos == n * n) {
+            if (checkFinal()) count++;
+            return;
+        }
+
+        // 行が完成したタイミングで「和」を判定し枝切り
+        if (pos > 0 && pos % n == 0) {
+            int rowSum = 0;
+            for (int i = pos - n; i < pos; i++) rowSum += board[i];
+            if (rowSum != s) return;
+        }
+
+        for (int val = 1; val <= n * n; val++) {
+            if (!used[val]) {
+                used[val] = true;
+                board[pos] = val;
+                backtrack(pos + 1);
+                used[val] = false;
+            }
+        }
+    }
+
+    private boolean checkFinal() {
+        // 列の合計確認
+        for (int c = 0; c < n; c++) {
+            int colSum = 0;
+            for (int r = 0; r < n; r++) colSum += board[r * n + c];
+            if (colSum != s) return false;
+        }
+        // 対角線の合計確認
+        int d1 = 0, d2 = 0;
+        for (int i = 0; i < n; i++) {
+            d1 += board[i * n + i];
+            d2 += board[i * n + (n - 1 - i)];
+        }
+        return d1 == s && d2 == s;
+    }
+
+    public static void main(String[] args) {
+        new MagicSquareSolver(3).solve();
+    }
+}
+‘‘‘
+
+#### 6-2. 著者による考察
+Javaでの実装は、メモリ構造を厳格に定義することから始まります。この「準備」の手間こそが、大規模な探索ロジックにおけるインデックスミスや論理破綻を防ぐ防波堤となります。AIが構造の類似性から誤って提示したn-Queenのロジックを見抜き、本来の数学的定義（和の判定）へ引き戻す工程こそが、プロの検収能力の証明です。

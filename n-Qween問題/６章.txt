@@ -1,0 +1,57 @@
+# 第6章：Java ―― 堅牢な構造とLTSの信頼
+
+## 6-1. エンタープライズが選ぶ「型と構造」の安心感
+Javaは、徹底したオブジェクト指向と強力な標準ライブラリを備えた言語です。受託開発において、Javaが長年主役であり続ける理由は、その'''堅牢性と保守性'''にあります。
+
+n-Queen問題をJavaで解く場合、単なる計算速度だけでなく、多人数での開発にも耐えうる「構造化された美しさ」が重要になります。
+
+### 実装のポイント
+* '''カプセル化''': 盤面の状態や計算ロジックをクラスに閉じ込め、不適切な操作を許さない設計にします。
+* '''LTS（長期サポート）版の意識''': Java 17や21といったモダンな機能を活用しつつ、信頼性の高いコードを書きます。
+* '''JVMによる最適化''': 実行時にJVM（Java仮想マシン）がコードを解析し、ホットスポットを自動的に最適化してくれる恩恵を享受します。
+
+### Javaによる構造化実装コード
+'''java
+// public を削除して class だけで始める
+class NQueenSolver {
+    private static long totalSolutions = 0;
+    private static int allMask;
+
+    public static void solve(int colMask, int leftMask, int rightMask) {
+        if (colMask == allMask) {
+            totalSolutions++;
+            return;
+        }
+
+        int pos = allMask & ~(colMask | leftMask | rightMask);
+
+        while (pos != 0) {
+            int bit = pos & -pos;
+            pos ^= bit;
+            // Javaの符号なし右シフト
+            solve(colMask | bit, (leftMask | bit) << 1, (rightMask | bit) >>> 1);
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = 13;
+        allMask = (1 << n) - 1;
+
+        long start = System.currentTimeMillis();
+        solve(0, 0, 0);
+        long end = System.currentTimeMillis();
+
+        System.out.println("N=" + n + " の解の総数: " + totalSolutions);
+        System.out.println("実行時間: " + (end - start) / 1000.0 + " 秒");
+    }
+}
+'''
+
+## 6-2. 著者による考察
+Javaの実装で特筆すべきは、右シフト演算子の `>>>`（無符号右シフト）です。C言語などでは符号ビットの扱いに注意が必要ですが、Javaはこうした細部まで言語仕様として厳格に定義されています。
+
+
+
+また、Javaで書くということは、'''「JVMという巨大な知性」の上にロジックを載せる'''という感覚に近いです。最初はC++より遅くても、実行を繰り返すうちにJITコンパイラが最適化を行い、驚くほどのパフォーマンスを見せるようになります。
+
+この「予測可能な堅牢さ」こそが、多くの法人がJavaを指名する最大の理由であり、プロフェッショナルの道具としてのエレガンスなのです。

@@ -1,0 +1,74 @@
+### 第12章 Julia ―― 科学計算の未来を担う新星
+
+#### 12-1. 数学的直感と圧倒的パフォーマンス
+Juliaは、Pythonのような記述の平易さと、CやFortranに匹敵する実行速度を両立させた言語です。数学的な数式をそのままコードに落とし込めるような直感的な構文は、魔方陣のような「数理的秩序」を扱うプログラムにおいて、他の言語では得られない記述の喜びを提供してくれます。
+
+##### 実装のポイント
+* 12-1. 多次元配列の直感的な操作：1ベースのインデックスと強力なスライス機能を活用し、行・列・対角線の和を数学的な定義通りに記述します。
+* 12-2. Just-In-Time (JIT) コンパイルによる高速化：型推論を活かした動的な最適化により、再帰的な全探索処理においても極めて高いパフォーマンスを発揮します。
+* 12-3. 簡潔な枝切り論理：sum() 関数とスライスを組み合わせ、各行が完成した瞬間に制約条件を検証する無駄のない探索を実現します。
+
+##### Juliaによる魔方陣探索の実装コード
+｀｀｀julia
+function solve_magic_square(n)
+    s = n * (n^2 + 1) // 2  # 魔方陣定数
+    board = zeros(Int, n * n)
+    used = fill(false, n * n)
+    count = 0
+
+    function backtrack(pos)
+        # すべてのマスが埋まった場合
+        if pos > n * n
+            if check_final()
+                count += 1
+            end
+            return
+        end
+
+        # 【枝切り】行が埋まったタイミングで合計を判定
+        if pos > 1 && (pos - 1) % n == 0
+            row_idx = (pos - 1) ÷ n
+            row_sum = sum(board[(row_idx-1)*n+1 : (row_idx-1)*n+n])
+            if row_sum != s
+                return
+            end
+        end
+
+        for val in 1:(n * n)
+            if !used[val]
+                used[val] = true
+                board[pos] = val
+                backtrack(pos + 1)
+                used[val] = false
+            end
+        end
+    end
+
+    function check_final()
+        # 列の合計確認
+        for c in 1:n
+            col_sum = 0
+            for r in 1:n
+                col_sum += board[(r-1)*n + c]
+            end
+            if col_sum != s
+                return false
+            end
+        end
+        # 対角線の合計確認
+        d1 = sum(board[i + (i-1)*n] for i in 1:n)
+        d2 = sum(board[i + (n-i)*n] for i in 1:n)
+        return d1 == s && d2 == s
+    end
+
+    backtrack(1)
+    return count
+end
+
+n = 3
+result = solve_magic_square(n)
+println("$n 次の魔方陣の解の総数: $result")
+｀｀｀
+
+#### 12-2. 著者による考察
+Juliaでの実装は、かつてFortranで感じた数値計算への没入感と、現代的な生産性が融合したような感覚を覚えます。AIが過去の統計から安易に提示するn-Queenのロジックに流されず、魔方陣という「数値の等価性」に真っ向から向き合う。これこそが、受託開発で培った数学的厳密さへの誠実さであると確信しています。

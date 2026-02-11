@@ -1,0 +1,15 @@
+章,言語,8x8,12x12,,
+3,python,0.000686,0.352958,python 3.py ,
+4,C++　,0.000022,0.007712,g++ -O3 4.cpp -o 4.exe 8/12,
+5,C　,0,0.004,gcc -O3 5.c -o 5.exe ,
+6,Java,0.000147,0.006396,"javac Nqueens.java
+java NQueens",
+7,Rust,0.000016,0.0067,rustc -C opt-level=3 7.rs,
+8,Fortran,0.000012,0.005907,gfortran -O3 8.f90 -o 8.exe ,
+9,Pascal,0,0.008,fpc -O3 9.pas ,
+10,Go,0,6496,go build 10.go ,
+11,Kotlin,0.000127,0.006402,"kotlinc 11.kt -include-runtime -d 11.jar
+Java -jar 11.jar ",
+12,Julia,1.70E-05,0.007193,julia 12.jl,"> julia
+julia> ARGS = [“3”]/[""4""]
+julia> include(""12.jl"") "

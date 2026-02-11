@@ -1,0 +1,63 @@
+# 第11章：Kotlin ―― Javaをモダンに、そこで安全に
+
+## 11-1. Javaの不満を解消する「洗練」
+Kotlinは、JetBrains社によって開発された比較的新しい言語ですが、受託開発の現場（特にAndroid開発やサーバーサイド）ではすでにJavaに代わる主役の座を射止めています。
+
+Javaの堅牢さを引き継ぎながら、'''ボイラープレート（定型的なコード）'''を徹底的に排除したその姿は、ベテラン開発者にとっても非常に心地よいものです。
+
+### 実装のポイント
+* '''Null安全''': 実行時エラーの最大の原因であるNullポインタ例外を、コンパイル時に防ぎます。
+* '''簡潔な関数定義''': `fun` キーワードを用いた数学的な関数記述が可能です。
+* '''演算子の直感性''': `inv()`（ビット反転）や `shl`（左シフト）など、ビット演算もメソッドのように美しく記述できます。
+
+### Kotlinによる「スマート」な実装コード
+'''kotlin
+import java.util.Scanner
+import kotlin.system.measureTimeMillis
+
+const val N = 13
+var allMask: Int = 0
+var totalSolutions: Long = 0
+
+fun solve(colMask: Int, leftMask: Int, rightMask: Int) {
+    if (colMask == allMask) {
+        totalSolutions++
+        return
+    }
+
+    var pos = allMask and (colMask or leftMask or rightMask).inv()
+
+    while (pos != 0) {
+        val bit = pos and -pos
+        pos = pos xor bit
+        solve(colMask or bit, (leftMask or bit) shl 1, (rightMask or bit) ushr 1)
+    }
+}
+
+fun runSolve() {
+    totalSolutions = 0
+    allMask = (1 shl N) - 1
+
+    println("N=$N で計算開始...")
+    
+    // Kotlin標準の計測関数（ミリ秒）
+    val time = measureTimeMillis {
+        solve(0, 0, 0)
+    }
+
+    println("解の総数: $totalSolutions")
+    println("実行時間: ${time / 1000.0} 秒")
+}
+
+fun main() {
+    runSolve()
+}
+
+'''
+
+## 11-2. 著者による考察
+Java（第6章）と比較すると、同じロジックを書きながらも、コードの「ノイズ」がいかに減っているかが分かります。
+
+
+
+Kotlinは、Javaが積み上げてきた信頼という遺産を活かしつつ、Python（第3章）のような軽快さを手に入れた言語です。受託開発においても、'''「保守性の高さ」と「書く楽しさ」'''を両立させてくれる、非常にバランスの取れた選択肢と言えるでしょう。

@@ -1,0 +1,91 @@
+### 第9章 Pascal ―― 構造化プログラミングの教育的真髄
+
+#### 9-1. 読みやすさが育む論理的思考
+Pascalは、プログラムの構造と論理を明確に記述するために設計された言語です。その厳格な構文は、魔方陣のような再帰的な全探索を記述する際にも、論理の迷子を防ぐ強力なガイドとなります。教育的な側面を持ちつつ、実用的な探索アルゴリズムを美しく記述できる点が最大の魅力です。
+
+##### 実装のポイント
+* 9-1. 厳格な型定義：Subrange type（1..N*N）などを活用し、不正な値の混入を言語レベルで防ぐPascalらしい堅牢な設計を導入します。
+* 9-2. 早期枝切りによる最適化：行が埋まったタイミング（pos mod n = 0）で、現在の行の合計が魔方陣定数 S と一致するかを即座に判定します。
+* 9-3. 集合型（Set）の活用：標準的なPascalでは、使用済み数字のチェックに Set を用いることで、直感的かつ高速なメンバーシップ判定が可能です。
+
+##### Pascalによる魔方陣探索の実装コード
+‘‘‘Pascal
+program MagicSquareSolver;
+
+const
+  N = 3;
+  S = 15; { n * (n*n + 1) div 2 }
+
+var
+  Board: array[1..N*N] of Integer;
+  Used: array[1..N*N] of Boolean;
+  Count: Integer;
+
+{ 行・列・対角線の最終検証 }
+function CheckFinal: Boolean;
+var
+  R, C, SumVal, D1, D2: Integer;
+  OK: Boolean;
+begin
+  OK := True;
+  { 列の和の確認 }
+  for C := 1 to N do
+  begin
+    SumVal := 0;
+    for R := 1 to N do
+      SumVal := SumVal + Board[(R-1)*N + C];
+    if SumVal <> S then OK := False;
+  end;
+  { 対角線の和の確認 }
+  D1 := 0; D2 := 0;
+  for R := 1 to N do
+  begin
+    D1 := D1 + Board[(R-1)*N + R];
+    D2 := D2 + Board[(R-1)*N + (N-R+1)];
+  end;
+  if (D1 <> S) or (D2 <> S) then OK := False;
+  CheckFinal := OK;
+end;
+
+procedure Backtrack(Pos: Integer);
+var
+  Val, I, RowSum: Integer;
+begin
+  { 全てのマスが埋まった場合 }
+  if Pos > N * N then
+  begin
+    if CheckFinal then Count := Count + 1;
+    Exit;
+  end;
+
+  { 【枝切り】行が完成したタイミングで和を判定 }
+  if (Pos > 1) and ((Pos - 1) mod N = 0) then
+  begin
+    RowSum := 0;
+    for I := (Pos - N) to (Pos - 1) do
+      RowSum := RowSum + Board[I];
+    if RowSum <> S then Exit;
+  end;
+
+  for Val := 1 to N * N do
+  begin
+    if not Used[Val] then
+    begin
+      Used[Val] := True;
+      Board[Pos] := Val;
+      Backtrack(Pos + 1);
+      Used[Val] := False;
+    end;
+  end;
+end;
+
+begin
+  Count := 0;
+  FillChar(Used, SizeOf(Used), False);
+  Backtrack(1);
+  WriteLn(N, ' 次の魔方陣の解の総数: ', Count);
+end.
+‘‘‘
+
+#### 9-2. 著者による考察
+大学時代に学んだPascalの「記述の正確性」は、現代のどの言語を扱う際にも論理の基盤となっています。AIが安易に提供するn-Queenのような既存テンプレートの誤りに気づき、本来の数学的定義（魔方陣の等価性）へと引き戻す。この「検収する力」こそが、長年受託開発に携わってきたプロフェッショナルの技術的矜持です。

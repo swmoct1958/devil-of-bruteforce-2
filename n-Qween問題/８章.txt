@@ -1,0 +1,65 @@
+# 第8章：Modern Fortran ―― 自由形式で蘇る計算の覇者
+
+## 8-1. 科学計算の血統と「現代的進化」
+Fortranは、世界初の高水準言語として誕生して以来、一貫して「数値計算」の効率を追求してきました。大学時代にパンチカードや固定形式で触れた世代にとって、現在の'''自由形式（Free Form）'''のFortranは、全く別の洗練された言語に見えるかもしれません。
+
+しかし、その根底にある「計算に対する愚直なまでの誠実さ」は変わっていません。
+
+### 実装のポイント
+* '''再帰呼び出しの明示''': `recursive` キーワードを用い、アルゴリズムの意図を明確にします。
+* '''配列演算の強力さ''': 今回はビット演算を用いますが、Fortran本来の強みである配列操作の直感性も、この言語のエレガンスの一部です。
+* '''副作用の排除''': `pure` や `intent` を活用し、受託開発でも重要な「バグの入り込まない関数設計」を徹底できます。
+
+### Modern Fortranによる実装コード
+'''fortran
+program n_queen
+  implicit none
+  integer :: n, all_mask
+  integer(8) :: total
+  real :: start, finish
+
+  n = 13
+  all_mask = iand(ishft(1, n) - 1, z'ffffffff')
+  total = 0
+
+  call cpu_time(start)
+  call solve(0, 0, 0, all_mask, total)
+  call cpu_time(finish)
+
+  print *, "N =", n
+  print *, "Total Solutions:", total
+  print *, "Time (sec):", finish - start
+
+contains
+
+  recursive subroutine solve(col_mask, left_mask, right_mask, all_mask, total)
+    integer, intent(in) :: col_mask, left_mask, right_mask, all_mask
+    integer(8), intent(inout) :: total
+    integer :: pos, bit
+
+    if (col_mask == all_mask) then
+      total = total + 1
+    else
+      pos = iand(all_mask, not(ior(ior(col_mask, left_mask), right_mask)))
+      do while (pos /= 0)
+        bit = iand(pos, -pos)
+        pos = pos - bit
+        call solve(ior(col_mask, bit), &
+                   ishft(ior(left_mask, bit), 1), &
+                   ishft(ior(right_mask, bit), -1), &
+                   all_mask, total)
+      end do
+    end if
+  end subroutine solve
+
+end program n_queen
+
+'''
+
+## 8-2. 著者による考察
+Modern Fortranのコードは、意外なほどモダンで読みやすいことに驚かれるかもしれません。`iand`（論理積）や `ishft`（ビットシフト）といった組み込み関数は、'''プロセッサの命令セットに直結'''しており、数値計算における実行効率は今なおトップクラスです。
+
+
+
+受託開発の世界では目にする機会が減りましたが、巨大な行列演算や物理シミュレーションの現場では、Fortranは「現役の王者」です。
+古き良き「計算機」としての誇りと、現代的な「構造化」が同居するこの言語でn-Queenを解くことは、'''自分のプログラミングのルーツを再発見する'''ような、深い趣があります。

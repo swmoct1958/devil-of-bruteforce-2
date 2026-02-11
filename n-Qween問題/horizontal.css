@@ -1,0 +1,11 @@
+@charset "utf-8";
+html {
+  writing-mode: horizontal-tb;
+}
+.page-break {
+  page-break-before: always;
+  break-before: page;
+}
+nav#toc ol li ol li ol li ol {
+  display: none;
+}

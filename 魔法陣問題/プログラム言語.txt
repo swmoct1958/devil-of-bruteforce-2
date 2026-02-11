@@ -1,0 +1,10 @@
+python	　〇
+C++　		〇
+C　		〇
+Java	　〇
+Rust		
+Fortran	　〇
+Pascal	　〇
+Go			〇
+Kotlin		〇
+Julia		〇

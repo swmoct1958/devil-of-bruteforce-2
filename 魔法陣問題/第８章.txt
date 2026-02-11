@@ -1,0 +1,72 @@
+### 第8章 Fortran ―― 科学計算の重鎮が解く数学的秩序
+
+#### 8-1. 伝統と進化が織りなす「数値計算の極致」
+かつての固定形式から進化したFortranは、現代的な柔軟性を持ちながらも、数値計算における最適化の深さは他の追随を許しません。多次元配列の扱いや数学的表現の直感性は、魔方陣の論理を記述する上で、まさに「故郷に帰ったような」安心感と、高い計算性能を同時に提供してくれます。
+
+##### 実装のポイント
+* 8-1. フリーフォームとモジュール化：かつてのパンチカード時代の制約を脱し、モジュールとサブルーチンによる強固なカプセル化により、大規模な探索ロジックを整然と記述します。
+* 8-2. 配列演算による動的枝切り：行が埋まった瞬間に配列スライスを用いて合計値を算出し、定数和 S と一致しない枝を高速に排除します。
+
+##### Fortranによる魔方陣探索の実装コード
+‘‘‘Fortran
+module MagicSolver
+    implicit none
+contains
+    recursive subroutine solve(n, pos, board, used, s, count)
+        integer, intent(in) :: n, s
+        integer, intent(inout) :: pos, count
+        integer, intent(inout) :: board(n*n)
+        logical, intent(inout) :: used(n*n)
+        integer :: val, row_sum
+
+        ! すべてのマスが埋まった場合
+        if (pos > n * n) then
+            if (check_final(n, board, s)) count = count + 1
+            return
+        end if
+
+        ! 【枝切り】行が完成したタイミングで和を判定
+        if (pos > 1 .and. mod(pos-1, n) == 0) then
+            row_sum = sum(board(pos-n:pos-1))
+            if (row_sum /= s) return
+        end if
+
+        do val = 1, n * n
+            if (.not. used(val)) then
+                used(val) = .true.
+                board(pos) = val
+                pos = pos + 1
+                call solve(n, pos, board, used, s, count)
+                pos = pos - 1
+                used(val) = .false.
+            end if
+        end do
+    end subroutine solve
+
+    function check_final(n, board, s) result(ok)
+        integer, intent(in) :: n, s, board(n*n)
+        logical :: ok
+        integer :: i, j, c_sum, d1, d2
+        ok = .true.
+        do i = 1, n
+            c_sum = 0
+            do j = 1, n
+                c_sum = c_sum + board((j-1)*n + i)
+            end do
+            if (c_sum /= s) then
+                ok = .false.
+                return
+            end if
+        end do
+        d1 = 0; d2 = 0
+        do i = 1, n
+            d1 = d1 + board((i-1)*n + i)
+            d2 = d2 + board((i-1)*n + (n-i+1))
+        end do
+        if (d1 /= s .or. d2 /= s) ok = .false.
+    end function check_final
+end module MagicSolver
+‘‘‘
+
+#### 8-2. 著者による考察
+大学時代に慣れ親しんだFortranが、現代の仕様でこれほどまでに洗練されている姿を見るのは、一人のエンジニアとして喜びを感じます。受託開発の現場でも、高度な数値シミュレーションが求められる場面では、この「計算への特化」こそが、AIが提示しがちなn-Queenのような汎用ロジックとは一線を画す、数学的に正しい解を提供してくれます。

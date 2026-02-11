@@ -1,0 +1,56 @@
+# 第3章 Python ―― 直感と簡潔さの極み
+
+## Pythonが体現する「エレガンス」
+Pythonの設計哲学である「The Zen of Python」には、'''Simple is better than complex（複雑であるよりは、単純である方が良い）'''という言葉があります。Pythonによるn-Queenの実装は、第2章で描いた「設計図」を最も美しく、そして直感的に写し取ることができます。
+
+### 実装のポイント
+* '''再帰の素直な表現''': 複雑なポインタ操作やメモリ管理を排し、論理の構造をそのままコードにできます。
+* '''動的配列（リスト）の活用''': 盤面の状態を柔軟に扱い、探索の履歴を簡潔に管理します。
+
+### Pythonによる実装コード
+'''python
+import time
+
+def solve(row, board=None):
+    n = 13  # ハードコード
+    
+    # 1. 探索開始時（トップレベル）のみ計測開始
+    if row == 0:
+        solve.start_time = time.perf_counter()
+        board = [-1] * n
+
+    count = 0
+    if row == n:
+        return 1
+
+    for col in range(n):
+        # クイーンが置けるかどうかの判定
+        safe = True
+        for r in range(row):
+            if board[r] == col or \
+               board[r] - r == col - row or \
+               board[r] + r == col + row:
+                safe = False
+                break
+        
+        if safe:
+            board[row] = col
+            count += solve(row + 1, board)
+            board[row] = -1
+
+    # 2. 探索終了時（トップレベルに戻った時）のみ結果と時間を表示
+    if row == 0:
+        elapsed = time.perf_counter() - solve.start_time
+        print(f"Python: N={n}, Solutions={count}, Time={elapsed:.9f} sec")
+
+    return count
+
+if __name__ == "__main__":
+    solve(0)
+'''
+### 著者による考察
+このコードの美しさは、'''「何をするか」がそのまま「書いてある」'''点にあります。is_safe関数における斜めの判定 `abs(r - row) == abs(c - col)` は、数学的な定義をそのままコードに落とし込んだエレガントな表現です。
+
+受託開発において、納期が厳しく、仕様変更が頻発するフェーズでは、このような「読み違えの起きないコード」が最大の武器になります。しかし、計算速度という面では、Pythonは広大な探索空間（n=15以上など）に対しては非力です。
+
+次節では、この「論理」を維持したまま、速度の極限に挑むC++の世界へ足を踏み入れます。

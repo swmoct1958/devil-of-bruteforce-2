@@ -1,0 +1,80 @@
+# 第5章：C ―― ポインタとメモリの原風景
+
+## 5-1. 抽象化を削ぎ落とした「純粋な論理」
+C++からクラス（オブジェクト指向）の皮を剥ぎ取ると、そこに現れるのは'''関数とポインタ'''という極めてシンプルな世界です。C言語による実装は、高級言語が隠蔽している「メモリの振る舞い」を私たちに再認識させてくれます。
+
+受託開発の現場でも、組み込みやOSに近いレイヤーでは、今なおこの「剥き出しのC」が最強の武器となります。
+
+### 実装のポイント
+* '''静的メモリ確保''': 無駄なヒープメモリの動的確保を避け、スタックと静的領域を使い倒します。
+* '''関数ポインタへの道標''': 今回はシンプルに再帰関数を用いますが、その構造はCPUのスタックフレームの動きをダイレクトに反映します。
+
+### Cによる純粋実装コード
+'''c
+#include <stdio.h>
+#include <time.h>
+
+// 外部変数で状態を管理
+long long total_solutions = 0;
+unsigned int all_mask;
+
+/**
+ * N-Queenをビット演算で解く再帰関数
+ * col_mask: 垂直方向の制約
+ * left_mask: 左斜め方向の制約
+ * right_mask: 右斜め方向の制約
+ */
+void solve(unsigned int col_mask, unsigned int left_mask, unsigned int right_mask) {
+    // すべての列にクイーンが置けたら1つ解を発見
+    if (col_mask == all_mask) {
+        total_solutions++;
+        return;
+    }
+
+    // 配置可能な位置（0のビット）を反転させて1として抽出
+    unsigned int pos = all_mask & ~(col_mask | left_mask | right_mask);
+
+    while (pos) {
+        // 最下位ビット（最も右にある1）を取り出す
+        // 2の補数を利用した技巧的な抽出
+        unsigned int bit = pos & (~pos + 1); 
+        
+        // 取り出したビットを消す
+        pos ^= bit; 
+
+        // 次の行へ再帰（斜め方向はビットシフトで表現）
+        solve(col_mask | bit, (left_mask | bit) << 1, (right_mask | bit) >> 1);
+    }
+}
+
+int main() {
+    int n = 13;
+    all_mask = (1U << n) - 1; // n=13なら下位13ビットを1にする
+    total_solutions = 0;
+
+    // --- ここから計測開始 ---
+    clock_t start = clock();
+
+    solve(0, 0, 0);
+
+    clock_t end = clock();
+    // --- ここで計測終了 ---
+    
+    double duration = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("N=%d の解の総数: %lld\n", n, total_solutions);
+    printf("実行時間: %.6f 秒\n", duration);
+
+    return 0;
+}
+
+'''
+
+## 5-2. 著者による考察
+C++版とロジックは似ていますが、C言語で書くと'''「ただのメモリの塊をどう操作するか」'''という視点がより強くなります。
+
+
+
+ここで注目すべきは、変数のスコープとスタックの関係です。再帰呼び出しが行われるたびに、CPUのレジスタの値がスタックに積まれ、戻るときに復元される。この一連の動作を想像しながらコードを書くことは、'''「if-then/goto」の原風景'''に最も近い体験と言えるでしょう。
+
+このシンプルさゆえの強靭さが、数十年経ってもC言語が消えない理由なのです。

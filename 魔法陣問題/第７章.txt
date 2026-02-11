@@ -1,0 +1,95 @@
+### 第7章 Rust ―― 所有権とゼロコスト抽象化がもたらす超速探索
+
+#### 7-1. 安全性と速度の両立
+Rustの最大の特徴は、ガベージコレクションなしにメモリ安全性を保証する「所有権」システムにあります。魔法陣の全探索のような、数億回以上の再帰呼び出しを伴う計算処理において、RustはC++に匹敵する実行速度を提供しつつ、並行処理におけるデータ競合をコンパイルレベルで防ぎます。
+
+##### 実装のポイント
+* 7-1. 1次元配列とスライス：盤面を Vec<i32> または固定長配列で管理し、スライスによる範囲チェックを最小限に抑えることで高速化を図ります。
+* 7-2. 定数和 S による早期枝切り：各行が埋まったタイミング（pos % n == 0）で和を判定し、一致しなければ即座にリターン（バックトラック）します。
+* 7-3. イテレータと再帰：Rustの強力なイテレータを使いつつ、状態の変更と復元を確実に制御します。
+
+##### Rustによる魔法陣探索の実装コード
+‘‘‘Rust
+struct MagicSquareSolver {
+    n: usize,
+    s: i32,
+    board: Vec<i32>,
+    used: Vec<bool>,
+    count: usize,
+}
+
+impl MagicSquareSolver {
+    fn new(n: usize) -> Self {
+        Self {
+            n,
+            s: (n * (n * n + 1) / 2) as i32,
+            board: vec![0; n * n],
+            used: vec![false; n * n + 1],
+            count: 0,
+        }
+    }
+
+    fn solve(&mut self) -> usize {
+        self.backtrack(0);
+        self.count
+    }
+
+    fn backtrack(&mut self, pos: usize) {
+        // すべてのマスが埋まった場合
+        if pos == self.n * self.n {
+            if self.check_final() {
+                self.count += 1;
+            }
+            return;
+        }
+
+        // 行が完成したタイミングでの枝切り
+        if pos > 0 && pos % self.n == 0 {
+            let row_sum: i32 = self.board[pos - self.n..pos].iter().sum();
+            if row_sum != self.s {
+                return;
+            }
+        }
+
+        for val in 1..=(self.n * self.n) as i32 {
+            if !self.used[val as usize] {
+                self.used[val as usize] = true;
+                self.board[pos] = val;
+                self.backtrack(pos + 1);
+                self.used[val as usize] = false;
+            }
+        }
+    }
+
+    fn check_final(&self) -> bool {
+        // 列の確認
+        for c in 0..self.n {
+            let mut col_sum = 0;
+            for r in 0..self.n {
+                col_sum += self.board[r * self.n + c];
+            }
+            if col_sum != self.s {
+                return false;
+            }
+        }
+        // 対角線の確認
+        let mut d1 = 0;
+        let mut d2 = 0;
+        for i in 0..self.n {
+            d1 += self.board[i * self.n + i];
+            d2 += self.board[i * self.n + (self.n - 1 - i)];
+        }
+        d1 == self.s && d2 == self.s
+    }
+}
+
+fn main() {
+    let n = 3;
+    let mut solver = MagicSquareSolver::new(n);
+    println!("{}次の魔法陣の解の総数: {}", n, solver.solve());
+}
+‘‘‘
+
+#### 7-2. 著者による考察
+Rustで魔法陣を解く最大のメリットは、コンパイラが「論理以外のミス」を徹底的に排除してくれる点にあります。Java以上に厳格な所有権の管理により、バックトラッキング時の中断・再開が安全に行われることが保証されます。
+一人法人の開発者にとって、実行速度を稼ぐための低レイヤな工夫が、そのまま安全なコードに繋がるRustという言語は、数学的探究の最高のパートナーと言えるでしょう。

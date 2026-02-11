@@ -1,0 +1,96 @@
+### 第10章 Go ―― 並行性とシンプルさが生む現代的パフォーマンス
+
+#### 10-1. 現代のシステム開発における最適解
+Go言語は、C言語のようなシンプルさと、現代的な並行処理機構（Goroutine）を兼ね備えた言語です。新しい言語に強い関心を持つエンジニアにとって、Goの「過不足のない設計」は、魔法陣のような探索アルゴリズムを実装する際にも、迷いのない論理構築を可能にします。
+
+##### 実装のポイント
+* 10-1. スライスの効率的な運用：Goの柔軟なスライスを使い、n * n の1次元配列として盤面を効率的に管理します。
+* 10-2. 早期枝切りによる高速化：行が完成したタイミング（pos % n == 0）で和の判定を行い、不要な再帰を即座に中断します。
+* 10-3. 型の厳格さと簡潔さ：複雑なクラス構造を避け、関数と構造体による素直な実装を通じて、数学的定義をダイレクトにコードへ反映させます。
+
+##### Goによる魔法陣探索の実装コード
+‘‘‘Go
+package main
+
+import (
+	"fmt"
+)
+
+type Solver struct {
+	n     int
+	s     int
+	board []int
+	used  []bool
+	count int
+}
+
+func NewSolver(n int) *Solver {
+	return &Solver{
+		n:     n,
+		s:     n * (n*n + 1) / 2,
+		board: make([]int, n*n),
+		used:  make([]bool, n*n+1),
+		count: 0,
+	}
+}
+
+func (sv *Solver) backtrack(pos int) {
+	// すべてのマスが埋まった場合
+	if pos == sv.n*sv.n {
+		if sv.checkFinal() {
+			sv.count++
+		}
+		return
+	}
+
+	// 【枝切り】行が完成したタイミングで和を判定
+	if pos > 0 && pos%sv.n == 0 {
+		rowSum := 0
+		for i := pos - sv.n; i < pos; i++ {
+			rowSum += sv.board[i]
+		}
+		if rowSum != sv.s {
+			return
+		}
+	}
+
+	for val := 1; val <= sv.n*sv.n; val++ {
+		if !sv.used[val] {
+			sv.used[val] = true
+			sv.board[pos] = val
+			sv.backtrack(pos + 1)
+			sv.used[val] = false
+		}
+	}
+}
+
+func (sv *Solver) checkFinal() bool {
+	// 列の合計確認
+	for c := 0; c < sv.n; c++ {
+		colSum := 0
+		for r := 0; r < sv.n; r++ {
+			colSum += sv.board[r*sv.n+c]
+		}
+		if colSum != sv.s {
+			return false
+		}
+	}
+	// 対角線の合計確認
+	d1, d2 := 0, 0
+	for i := 0; i < sv.n; i++ {
+		d1 += sv.board[i*sv.n+i]
+		d2 += sv.board[i*sv.n+(sv.n-1-i)]
+	}
+	return d1 == sv.s && d2 == sv.s
+}
+
+func main() {
+	n := 3
+	sv := NewSolver(n)
+	sv.backtrack(0)
+	fmt.Printf("%d次の魔法陣の解の総数: %d\n", n, sv.count)
+}
+‘‘‘
+
+#### 10-2. 著者による考察
+新しい言語であるGoに触れる際、最も重要なのは「既存の慣習（n-Queenの解法など）を盲信せず、その言語で正しく仕様を記述する」ことです。AIが提示する曖昧なコードを、自身の経験に基づき「魔方陣の定義」へと引き戻す。この検収作業こそが、67歳のエンジニアが新しい技術を真に自分のものにするための最短ルートであると確信しています。
